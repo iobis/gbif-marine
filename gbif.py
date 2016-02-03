@@ -1,6 +1,10 @@
 import time
 import psycopg2
 from requests import get
+import grequests
+
+batch_size = 50
+pool_size = 5
 
 aphia_url = "http://www.marinespecies.org/aphia.php?p=soap&wsdl=1"
 gbif_url = "http://api.gbif.org/v1/species/%s/speciesProfiles"
@@ -10,29 +14,51 @@ cur = con.cursor()
 
 while True:
 
-	print "Retrieving taxon keys from db..."
+	# retrieve names from database
 
+	print "Retrieving taxon keys from db..."
+	
 	cur.execute("select taxonkey from gbif.names where last_checked is null")
-	rows = cur.fetchmany(100)
+	rows = cur.fetchmany(batch_size)
 	if (len(rows) == 0):
 		break
 
+	# create list of urls
+
 	print "Querying GBIF..."
 
-	for res in rows:
+	keys = []
+	urls = []
 
-		key = res[0]
-		url = gbif_url % key
-		r = get(url)
+	for row in rows:
+		key = row[0]
+		keys.append(key)
+		urls.append(gbif_url % key)
+
+	# initiate requests
+
+	rs = (grequests.get(u) for u in urls)	
+
+	# process responses
+
+	responses = grequests.map(rs, size=pool_size)
+
+	print "GBIF responses received..."
+
+	queries = []
+
+	for i, r in enumerate(responses):
+
+		key = keys[i]
 		data = r.json()
 		results = data['results']
 
 		v = []
 		v.append("last_checked = '" + time.strftime("%Y/%m/%d %H:%M:%S") + "'")
 
-		if (len(results) > 0):
+		# process species profiles
 
-			print key
+		if (len(results) > 0):
 
 			irmng = False
 			worms = False
@@ -79,8 +105,10 @@ while True:
 						if result["extinct"]:
 							v.append("worms_extinct = true")
 
-		cur.execute("update gbif.names set " + ",".join(v) + " where taxonkey = " + str(key))
+		queries.append("update gbif.names set " + ",".join(v) + " where taxonkey = " + str(key) + ";")
 
 	print "Committing to db..."
 
+	query = "".join(queries)
+	cur.execute(query)
 	con.commit()

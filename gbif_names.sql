@@ -5,7 +5,7 @@ with taxa as (
 	select scientificname, taxonkey
 	from gbif.occurrence
 	group by scientificname, taxonkey
-	order by scientificname
+	order by taxonkey
 )
 select 
 	taxa.*,
@@ -23,3 +23,5 @@ select
 	cast(null as boolean) as irmng_extinct,
 	cast(null as integer) as irmng_id
 from taxa;
+
+create index names_ix_taxonkey on gbif.names using btree(taxonkey);
