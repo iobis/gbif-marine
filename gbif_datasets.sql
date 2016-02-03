@@ -11,7 +11,8 @@ select
 	cast(null as text) as description,
 	cast(null as timestamp) as pubdate,
 	cast(null as text) as taxonomiccoverage,
-	cast(null as text) as geographiccoverage
+	cast(null as text) as geographiccoverage,
+	cast(null as timestamp) as last_checked	
 from gbif.occurrence
 inner join gbif.names
 on occurrence.taxonkey = names.taxonkey
