@@ -15,3 +15,14 @@ from gbif.datasets d
 left join gbif.organizations o
 on d.publishingorganizationkey = o.key
 order by d.records desc;
+
+select 
+	d.title as title,
+	d.records,
+	d.taxa,
+	o.country as org_country
+from gbif.datasets d
+left join gbif.organizations o
+on d.publishingorganizationkey = o.key
+where d.records > 1000
+order by d.records desc;
