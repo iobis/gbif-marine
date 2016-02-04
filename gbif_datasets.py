@@ -2,6 +2,7 @@ import time
 import psycopg2
 from requests import get
 import grequests
+import sys
 
 batch_size = 50
 pool_size = 5
@@ -13,14 +14,14 @@ cur = con.cursor()
 
 while True:
 
-	# retrieve dataset kets from database
+	# retrieve dataset keys from database
 
 	print "Retrieving dataset keys from db..."
 	
 	cur.execute("select datasetkey from gbif.datasets where last_checked is null")
 	rows = cur.fetchmany(batch_size)
 	if (len(rows) == 0):
-		break
+		sys.exit()
 
 	# create list of urls
 
