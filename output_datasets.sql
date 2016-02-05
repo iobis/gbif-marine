@@ -2,6 +2,7 @@
 	d.title as title,
 	d.obis,
 	d.records,
+	d.totalrecords,
 	d.taxa,
 	d.description as description,
 	d.datasetkey as key,
@@ -21,6 +22,7 @@ select
 	d.title as title,
 	d.obis,
 	d.records,
+	d.totalrecords,
 	d.taxa,
 	o.country as org_country
 from gbif.datasets d

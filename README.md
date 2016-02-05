@@ -28,18 +28,22 @@ Retrieves species profiles and dataset information from the GBIF API.
 
  This queries the GBIF API for dataset information.
 
-7. `gbif_organizations.sql`
+7. `totalrecords.sql`
+
+ This adds the total number of records to the datasets.
+
+8. `gbif_organizations.sql`
 
  This creates a `organizations` table from the `datasets` table.
 
-8. `gbif_organizations.py`
+9. `gbif_organizations.py`
 
  This queries the GBIF API for publishing organization information.
 
-9. `obis.py`
+10. `obis.py`
 
  This marks OBIS datasets.
 
-10. `output_datasets.sql`
+11. `output_datasets.sql`
 
  This outputs the [datasets.csv](datasets.csv) and [datasets_sample.csv](datasets_sample.csv) tables.
