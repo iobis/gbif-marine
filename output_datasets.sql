@@ -3,6 +3,7 @@
 	d.obis,
 	d.records,
 	d.totalrecords,
+	round(cast(cast(d.records as double precision) / cast(d.totalrecords as double precision) as numeric), 2) as fraction,
 	d.taxa,
 	d.description as description,
 	d.datasetkey as key,
@@ -23,6 +24,7 @@ select
 	d.obis,
 	d.records,
 	d.totalrecords,
+	round(cast(cast(d.records as double precision) / cast(d.totalrecords as double precision) as numeric), 2) as fraction,
 	d.taxa,
 	o.country as org_country
 from gbif.datasets d
