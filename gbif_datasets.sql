@@ -13,7 +13,8 @@ select
 	cast(null as timestamp) as pubdate,
 	cast(null as text) as taxonomiccoverage,
 	cast(null as text) as geographiccoverage,
-	cast(null as timestamp) as last_checked	
+	cast(null as timestamp) as last_checked,
+	cast(null as boolean) as obis
 from gbif.occurrence
 inner join gbif.names
 on occurrence.taxonkey = names.taxonkey

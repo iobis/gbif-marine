@@ -1,5 +1,6 @@
-﻿select 
+﻿select
 	d.title as title,
+	d.obis,
 	d.records,
 	d.taxa,
 	d.description as description,
@@ -18,6 +19,7 @@ order by d.records desc;
 
 select 
 	d.title as title,
+	d.obis,
 	d.records,
 	d.taxa,
 	o.country as org_country
