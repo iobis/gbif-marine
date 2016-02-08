@@ -15,7 +15,7 @@ cur = con.cursor()
 
 while True:
 
-	# retrieve organization keys from database
+	# retrieve node keys from database
 
 	print "Retrieving node keys from db..."
 	
