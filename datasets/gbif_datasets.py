@@ -58,8 +58,12 @@ while True:
 
 			# process dataset
 
+			v.append("url = '%s'" % urls[i])
+
 			if ("publishingOrganizationKey" in dataset):
 				v.append("publishingorganizationkey = '%s'" % dataset["publishingOrganizationKey"])
+			if ("installationKey" in dataset):
+				v.append("installationkey = '%s'" % dataset["installationKey"])
 			if ("doi" in dataset):
 				v.append("doi = '%s'" % dataset["doi"])
 			if ("type" in dataset):

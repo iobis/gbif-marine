@@ -48,10 +48,18 @@ This is a collection of scripts which compiles a list of marine datasets in GBIF
 
  This queries the GBIF API for node information.
 
-12. `obis.py`
+12. `gbif_installations.sql`
+
+ This creates a `installations` table from the `datasets` table.
+
+13. `gbif_installations.py`
+
+ This queries the GBIF API for installation information.
+
+14. `obis.py`
 
  This marks OBIS datasets.
 
-13. `output_datasets.sql`
+15. `output_datasets.sql`
 
  This outputs the [datasets.csv](datasets.csv) and [datasets_sample.csv](datasets_sample.csv) tables.

@@ -6,6 +6,8 @@ select
 	sum(records) as records,
 	count(distinct(occurrence.taxonkey)) as taxa,
 	cast(null as text) as publishingorganizationkey,
+	cast(null as text) as installationkey,
+	cast(null as text) as url,
 	cast(null as text) as doi,
 	cast(null as text) as type,
 	cast(null as text) as title,
