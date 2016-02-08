@@ -8,7 +8,7 @@ This is a collection of scripts which compiles a list of marine datasets in GBIF
 
  This creates a table `occurrence` for the `name_export.txt` file provided by GBIF.
 
-2. `gbif_export/gbif_occurrence_copy`
+2. `gbif_export/gbif_occurrence_copy.sql`
 
  This copies the `name_export.txt` file to database.
 
