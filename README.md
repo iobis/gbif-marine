@@ -1,6 +1,6 @@
 # gbif-marine
 
-Retrieves species profiles and dataset information from the GBIF API.
+This is a collection of scripts which compiles a list of marine datasets in GBIF. A file containing taxon lists for all datasets is required, but not incuded in this repository. Species profiles are retrieved from the GBIF API and checked for a WoRMS or IRMNG marine flag.
 
 ## How-to
 
