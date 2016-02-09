@@ -1,0 +1,1 @@
+﻿copy gbif.ids from '/Users/Pieterp/Dropbox (IPOfI)/OBIS/repo/gbif/datasets/id_mapping.csv' csv header;

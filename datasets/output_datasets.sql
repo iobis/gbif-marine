@@ -1,6 +1,7 @@
 ﻿select
 	d.title as title,
 	d.obis,
+	d.obis_id,
 	d.records,
 	d.totalrecords,
 	round(cast(cast(d.records as double precision) / cast(d.totalrecords as double precision) as numeric), 2) as fraction,
@@ -33,7 +34,7 @@ left join gbif.nodes n
 on o.endorsingnodekey = n.key
 left join gbif.installations i
 on d.installationkey = i.key
-order by d.records desc;
+order by d.datasetkey asc;
 
 select 
 	d.title as title,
