@@ -8,58 +8,50 @@ This is a collection of scripts which compiles a list of marine datasets in GBIF
 
  This creates a table `occurrence` for the `name_export.txt` file provided by GBIF.
 
-2. `gbif_export/gbif_occurrence_copy.sql`
+1. `gbif_export/gbif_occurrence_copy.sql`
 
  This copies the `name_export.txt` file to database.
 
-3. `gbif_names.sql`
+1. `gbif_names.sql`
 
  This creates a `names` table from the `occurrence` table.
 
-4. `gbif_profiles.py`
+1. `gbif_profiles.py`
 
  This queries the GBIF API for species profiles. The `names` table gets populated with WoRMS and IRMNG marine flags.
 
-5. `gbif_datasets.sql`
+1. `id_mapping.sql` and `id_mapping_copy.sql`
+
+ This creates a table and copies the `id_mapping.csv` file to database.
+
+1. `gbif_datasets.sql`
 
  This creates a `datasets` table from the `occurrence` and `names` tables. Only datasets with marine taxa are included.
 
-6. `gbif_datasets.py`
+1. `gbif_datasets.py`
 
  This queries the GBIF API for dataset information.
 
-7. `totalrecords.sql`
+1. `totalrecords.sql`
 
  This adds the total number of records to the datasets.
 
-8. `gbif_organizations.sql`
+1. `gbif_organizations.sql` and `gbif_organizations.py`
 
- This creates a `organizations` table from the `datasets` table.
+ This creates a `organizations` table from the `datasets` table and queries the GBIF API for publishing organization information.
 
-9. `gbif_organizations.py`
+1. `gbif_nodes.sql` and `gbif_nodes.py`
 
- This queries the GBIF API for publishing organization information.
+ This creates a `nodes` table from the `organizations` table and queries the GBIF API for node information.
 
-10. `gbif_nodes.sql`
+1. `gbif_installations.sql` and `gbif_installations.py`
 
- This creates a `nodes` table from the `organizations` table.
+ This creates a `installations` table from the `datasets` table and queries the GBIF API for installation information.
 
-11. `gbif_nodes.py`
-
- This queries the GBIF API for node information.
-
-12. `gbif_installations.sql`
-
- This creates a `installations` table from the `datasets` table.
-
-13. `gbif_installations.py`
-
- This queries the GBIF API for installation information.
-
-14. `obis.py`
+1. `obis.py`
 
  This marks OBIS datasets.
 
-15. `output_datasets.sql`
+1. `output_datasets.sql`
 
  This outputs the [datasets.csv](datasets.csv) and [datasets_sample.csv](datasets_sample.csv) tables.
