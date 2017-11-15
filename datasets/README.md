@@ -4,7 +4,7 @@ This is a collection of scripts which compiles a list of marine datasets in GBIF
 
 ## How-to
 
-#### gbif_export/gbif_names.sql
+#### gbif_export/gbif_occurrence_table.sql
 
 This creates a table `occurrence` for the `name_export.txt` file provided by GBIF.
 
