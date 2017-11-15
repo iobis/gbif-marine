@@ -1,6 +1,6 @@
 # datasets
 
-This is a collection of scripts which compiles a list of marine datasets in GBIF. A file containing taxon lists for all datasets is required, but not incuded in this repository. Species profiles are retrieved from the GBIF API and checked for a WoRMS or IRMNG marine flag.
+This is a collection of scripts which compiles a list of marine datasets in GBIF. [A file containing taxon lists for all datasets](https://gist.github.com/timrobertson100/9197460dadb28d0b442c) is required, but not incuded in this repository. Species profiles are retrieved from the GBIF API and checked for a WoRMS or IRMNG marine flag.
 
 ## How-to
 
