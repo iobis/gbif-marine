@@ -1,0 +1,129 @@
+---
+title: GBIF marine datasets
+date: "`r Sys.Date()`"
+author: Pieter Provoost
+output: (function(...) {
+  rmdformats::robobook(toc_depth = 3, ...) })
+editor_options: 
+  chunk_output_type: console
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs") })  
+---
+
+This notebook uses the GBIF API to generate statistics on marine data in GBIF. Note that this is a preliminary analysis which only uses species. The process looks like this:
+
+1. Get all marine species names from WoRMS
+2. Using the species names from WoRMS, get all profiles of marine species from GBIF
+3. Using the `nubKey`s from the species profiles, get record counts by dataset from GBIF 
+
+## Get all marine species from WoRMS
+
+This uses a full export of the WoRMS database. This file is not included in the repository, contact the WoRMS team to get access to such an export.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(dplyr)
+library(data.table)
+
+taxon <-  fread("worms_export/taxon.txt", sep = "\t", na.strings = "", quote = "") %>%
+  as_tibble()
+
+speciesprofile <-  fread("worms_export/speciesprofile.txt", sep = "\t", na.strings = "", quote = "") %>%
+  as_tibble()
+
+taxon_marine <- taxon %>%
+  left_join(speciesprofile, by = "taxonID", suffix = c("", ".y")) %>%
+  filter(taxonomicStatus == "accepted" & isMarine == 1 & taxonRank == "Species")
+
+species <- unique(taxon_marine$scientificName)
+```
+
+## Fetch species profiles from GBIF
+
+Here we use the GBIF API to search for species by name. The results are stored as CSV files in the `profiles` folder.
+
+```{r message=FALSE, warning=FALSE}
+library(stringr)
+library(jsonlite)
+library(progress)
+
+pb <- progress_bar$new(total = length(species), format = "[:bar] :current/:total (:percent) ETA: :eta")
+
+for (sp in species) {
+  key <- str_replace(tolower(sp), "\\s", "_")
+  filename <- paste0("profiles/", key, ".csv")
+  if (!file.exists(filename)) {
+    url <- URLencode(paste0("https://api.gbif.org/v1/species?name=", sp))
+    res <- fromJSON(url)$results
+    if (length(res) > 0 & "nubKey" %in% names(res)) {
+      species_names <- res %>%
+        select(key, nubKey, nameKey, taxonID)
+      write.csv(species_names, filename, row.names = FALSE, na = "")
+    } else {
+      write.csv(data.frame(nubKey = character(0)), filename, row.names = FALSE, na = "")
+    }
+  }  
+  pb$tick()
+}
+```
+
+## Get occurrence counts by dataset for each species
+
+Here we use another API endpoint to get the number of records per dataset for each species. But first read all the CSV files generated in the previous section:
+
+```{r message=FALSE, warning=FALSE}
+library(purrr)
+
+files <- list.files(path = "profiles", pattern = "*.csv", full.names = TRUE)
+
+profiles <- map(files, ~read.csv(.)) %>%
+  bind_rows()
+```
+
+Now let's get the dataset statistics. Results are stored in the `statistics` folder as CSV files.
+
+```{r message=FALSE, warning=FALSE}
+nubkeys <- na.omit(unique(profiles$nubKey))
+
+pb <- progress_bar$new(total = length(nubkeys), format = "[:bar] :current/:total (:percent) ETA: :eta")
+
+for (nubkey in nubkeys) {
+  filename <- paste0("statistics/", nubkey, ".csv")
+  if (!file.exists(filename)) {
+    url <- URLencode(paste0("https://api.gbif.org/v1/occurrence/counts/datasets?nubKey=", nubkey))
+    res <- fromJSON(url)
+    if (length(res) > 0) {
+      df <- data.frame(dataset = names(res), records = unlist(res))
+      write.csv(df, filename, row.names = FALSE, na = "")
+    } else {
+      write.csv(data.frame(dataset = character(0), records = integer(0)), filename, row.names = FALSE, na = "")
+    }
+  }  
+  pb$tick()
+}
+```
+
+Once all statistics have been fetched, read them from CSV:
+
+```{r message=FALSE, warning=FALSE}
+files <- list.files(path = "statistics", pattern = "*.csv", full.names = TRUE)
+
+statistics <- map(files, ~read.csv(., colClasses = c("character", "integer"))) %>%
+  bind_rows()
+```
+
+## Calculate statistics
+
+```{r message=FALSE, warning=FALSE}
+stats <- statistics %>%
+  group_by(dataset) %>%
+  summarize(records = sum(records)) %>%
+  arrange(desc(records))
+
+n_datasets <- format(nrow(stats), big.mark = ",")
+n_records <- format(sum(stats$records), big.mark = ",")
+
+stats %>%
+  rmarkdown::paged_table()
+```
+
+In total we have found `r n_datasets` datasets containing marine species, for a total of `r n_records` marine species records.

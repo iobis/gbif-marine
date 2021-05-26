@@ -1,4 +1,7 @@
-**/.DS_Store
-**/.Rhistory
-**/name_export.txt.zip
-**/name_export.txt
+.DS_Store
+.Rhistory
+name_export.txt.zip
+name_export.txt
+profiles
+statistics
+worms_export
