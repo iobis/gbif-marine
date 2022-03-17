@@ -7,7 +7,7 @@ output: (function(...) {
 editor_options: 
   chunk_output_type: console
 knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs") })  
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../docs") })  
 ---
 
 This notebook uses the GBIF API to generate statistics on marine data in GBIF. Note that this is a preliminary analysis which only uses species. The process looks like this:
@@ -20,7 +20,7 @@ This notebook uses the GBIF API to generate statistics on marine data in GBIF. N
 
 This uses a full export of the WoRMS database. This file is not included in the repository, contact the WoRMS team to get access to such an export.
 
-```{r message=FALSE, warning=FALSE, echo=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(dplyr)
 library(data.table)
 
@@ -39,76 +39,76 @@ species <- unique(taxon_marine$scientificName)
 
 ## Fetch species profiles from GBIF
 
-Here we use the GBIF API to search for species by name. The results are stored as CSV files in the `profiles` folder.
+Here we use the GBIF API to search for species by name. The results are stored as CSV files in the `profiles` folder. Once all species have been processed, read the CSV files.
 
 ```{r message=FALSE, warning=FALSE}
 library(stringr)
 library(jsonlite)
 library(progress)
+library(purrr)
 
-pb <- progress_bar$new(total = length(species), format = "[:bar] :current/:total (:percent) ETA: :eta")
+if (!file.exists("profiles.rds")) {
+  
+  pb <- progress_bar$new(total = length(species), format = "[:bar] :current/:total (:percent) ETA: :eta")
+  
+  for (sp in species) {
+    key <- str_replace(tolower(sp), "\\s", "_")
+    filename <- paste0("profiles/", key, ".csv")
+    if (!file.exists(filename)) {
+      url <- URLencode(paste0("https://api.gbif.org/v1/species?name=", sp))
+      res <- fromJSON(url)$results
+      if (length(res) > 0 & "nubKey" %in% names(res)) {
+        species_names <- res %>%
+          select(key, nubKey, nameKey, taxonID)
+        write.csv(species_names, filename, row.names = FALSE, na = "")
+      } else {
+        write.csv(data.frame(nubKey = character(0)), filename, row.names = FALSE, na = "")
+      }
+    }  
+    pb$tick()
+  }
 
-for (sp in species) {
-  key <- str_replace(tolower(sp), "\\s", "_")
-  filename <- paste0("profiles/", key, ".csv")
-  if (!file.exists(filename)) {
-    url <- URLencode(paste0("https://api.gbif.org/v1/species?name=", sp))
-    res <- fromJSON(url)$results
-    if (length(res) > 0 & "nubKey" %in% names(res)) {
-      species_names <- res %>%
-        select(key, nubKey, nameKey, taxonID)
-      write.csv(species_names, filename, row.names = FALSE, na = "")
-    } else {
-      write.csv(data.frame(nubKey = character(0)), filename, row.names = FALSE, na = "")
-    }
-  }  
-  pb$tick()
+  files <- list.files(path = "profiles", pattern = "*.csv", full.names = TRUE)
+  profiles <- map(files, ~read.csv(.)) %>%
+    bind_rows()
+
+} else {
+  profiles <- readRDS("profiles.rds")
 }
 ```
 
 ## Get occurrence counts by dataset for each species
 
-Here we use another API endpoint to get the number of records per dataset for each species. But first read all the CSV files generated in the previous section:
+Here we use another API endpoint to get the number of records per dataset for each species. Results are stored in the `statistics` folder as CSV files.
 
 ```{r message=FALSE, warning=FALSE}
-library(purrr)
+if (!file.exists("statistics.rds")) {
 
-files <- list.files(path = "profiles", pattern = "*.csv", full.names = TRUE)
+  nubkeys <- na.omit(unique(profiles$nubKey))
+  pb <- progress_bar$new(total = length(nubkeys), format = "[:bar] :current/:total (:percent) ETA: :eta")
+  
+  for (nubkey in nubkeys) {
+    filename <- paste0("statistics/", nubkey, ".csv")
+    if (!file.exists(filename)) {
+      url <- URLencode(paste0("https://api.gbif.org/v1/occurrence/counts/datasets?nubKey=", nubkey))
+      res <- fromJSON(url)
+      if (length(res) > 0) {
+        df <- data.frame(dataset = names(res), records = unlist(res))
+        write.csv(df, filename, row.names = FALSE, na = "")
+      } else {
+        write.csv(data.frame(dataset = character(0), records = integer(0)), filename, row.names = FALSE, na = "")
+      }
+    }  
+    pb$tick()
+  }
 
-profiles <- map(files, ~read.csv(.)) %>%
-  bind_rows()
-```
+  files <- list.files(path = "statistics", pattern = "*.csv", full.names = TRUE)
+  statistics <- map(files, ~read.csv(., colClasses = c("character", "integer"))) %>%
+    bind_rows()
 
-Now let's get the dataset statistics. Results are stored in the `statistics` folder as CSV files.
-
-```{r message=FALSE, warning=FALSE}
-nubkeys <- na.omit(unique(profiles$nubKey))
-
-pb <- progress_bar$new(total = length(nubkeys), format = "[:bar] :current/:total (:percent) ETA: :eta")
-
-for (nubkey in nubkeys) {
-  filename <- paste0("statistics/", nubkey, ".csv")
-  if (!file.exists(filename)) {
-    url <- URLencode(paste0("https://api.gbif.org/v1/occurrence/counts/datasets?nubKey=", nubkey))
-    res <- fromJSON(url)
-    if (length(res) > 0) {
-      df <- data.frame(dataset = names(res), records = unlist(res))
-      write.csv(df, filename, row.names = FALSE, na = "")
-    } else {
-      write.csv(data.frame(dataset = character(0), records = integer(0)), filename, row.names = FALSE, na = "")
-    }
-  }  
-  pb$tick()
+} else {
+  statistics <- readRDS("statistics.rds")
 }
-```
-
-Once all statistics have been fetched, read them from CSV:
-
-```{r message=FALSE, warning=FALSE}
-files <- list.files(path = "statistics", pattern = "*.csv", full.names = TRUE)
-
-statistics <- map(files, ~read.csv(., colClasses = c("character", "integer"))) %>%
-  bind_rows()
 ```
 
 ## Calculate statistics
